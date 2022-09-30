@@ -1,6 +1,6 @@
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
-project "TemplateApp" -- TODO: Rename
+project "Snake"
 	kind "ConsoleApp"
 	language "C++"
 	cppdialect "C++17"

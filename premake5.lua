@@ -1,5 +1,5 @@
-workspace "SFMLAppTemplate"
+workspace "Snake"
 	architecture "x86_64"
 	configurations { "Debug", "Release", }
 
-include "TemplateApp" -- TODO: Rename
+include "Snake"
