@@ -20,7 +20,9 @@ public:
 		{
 			sf::Event event;
 			while (window.pollEvent(event))
+			{
 				app.OnEvent(event);
+			}
 
 			static sf::Clock clock;
 			static sf::Time lastTime = sf::Time::Zero;

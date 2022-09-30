@@ -3,7 +3,7 @@ outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 project "Snake"
 	kind "ConsoleApp"
 	language "C++"
-	cppdialect "C++17"
+	cppdialect "C++20"
 
 	targetdir ("%{wks.location}/bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("%{wks.location}/bin-int/" .. outputdir .. "/%{prj.name}")
@@ -30,6 +30,14 @@ project "Snake"
 		"vendor/SFML-2.5.1/lib"
 	}
 
+	links
+	{
+		"opengl32.lib",
+		"winmm.lib",
+		"gdi32.lib",
+		"freetype.lib",
+	}
+
 	filter "system:windows"
 		systemversion "latest"
 
@@ -41,9 +49,6 @@ project "Snake"
 
 		links
 		{
-			"opengl32.lib",
-			"winmm.lib",
-			"gdi32.lib",
 			"sfml-system-s-d.lib",
 			"sfml-window-s-d.lib",
 			"sfml-graphics-s-d.lib",
@@ -54,14 +59,12 @@ project "Snake"
 	filter "configurations:Release"
 		runtime "Release"
 		optimize "On"
+		kind "WindowedApp"
 
 		defines { "NDEBUG" }
 
 		links
 		{
-			"opengl32.lib",
-			"winmm.lib",
-			"gdi32.lib",
 			"sfml-system-s.lib",
 			"sfml-window-s.lib",
 			"sfml-graphics-s.lib",
