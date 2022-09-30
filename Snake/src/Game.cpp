@@ -24,7 +24,7 @@ namespace Snake {
 
 	void Game::Update(sf::Time ts)
 	{
-		GetDir();
+		GetSnakeDir();
 
 		static float t = 0;
 		if (t >= .1f)
@@ -32,17 +32,9 @@ namespace Snake {
 			UpdateSnake();
 			t = 0;
 		}
-		else
-		{
-			t += ts.asSeconds();
-		}
+		t += ts.asSeconds();
 
-		window->clear();
-
-		for (Block& block : snake)
-			window->draw(block);
-
-		window->display();
+		Draw();
 	}
 
 	void Game::OnEvent(sf::Event& event)
@@ -53,24 +45,27 @@ namespace Snake {
 		}
 	}
 
-	void Game::GetDir()
+	void Game::GetSnakeDir()
 	{
 		sf::Vector2i& dir = snake[0].Dir;
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::W))
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::W) && dir.y != 1)
 			dir = { 0, -1 };
-		else if (sf::Keyboard::isKeyPressed(sf::Keyboard::S))
+		else if (sf::Keyboard::isKeyPressed(sf::Keyboard::S) && dir.y != -1)
 			dir = { 0, 1 };
-		else if (sf::Keyboard::isKeyPressed(sf::Keyboard::D))
+		else if (sf::Keyboard::isKeyPressed(sf::Keyboard::D) && dir.x != -1)
 			dir = { 1, 0 };
-		else if (sf::Keyboard::isKeyPressed(sf::Keyboard::A))
+		else if (sf::Keyboard::isKeyPressed(sf::Keyboard::A) && dir.x != 1)
 			dir = { -1, 0 };
 	}
 
 	void Game::UpdateSnake()
 	{
 		Block& head = snake[0];
-		for (auto block = snake.rbegin(); *block != head; block++)
+		for (auto block = snake.rbegin(); block != --snake.rend(); block++)
 		{
+			if (*block == head)
+				std::cout << "Game Over\n";
+
 			MoveBlock(*block, (block + 1)->Pos);
 		}
 		MoveBlock(head, head.Pos += head.Dir);
@@ -94,6 +89,16 @@ namespace Snake {
 		block.Pos = coord;
 		block.Rect.setPosition(coord.x / (float)gridSize.x * windowSize.x,
 			coord.y / (float)gridSize.y * windowSize.y);
+	}
+
+	void Game::Draw()
+	{
+		window->clear();
+
+		for (Block& block : snake)
+			window->draw(block);
+
+		window->display();
 	}
 
 }
