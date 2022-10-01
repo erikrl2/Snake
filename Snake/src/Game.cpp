@@ -30,8 +30,6 @@ namespace Snake {
 		SpawnApple();
 	}
 
-	static bool turning = false;
-
 	void Game::Update(sf::Time ts)
 	{
 		if (playing)
@@ -42,7 +40,6 @@ namespace Snake {
 				UpdateSnake();
 
 				t = 0;
-				turning = false;
 			}
 			t += ts.asSeconds();
 		}
@@ -67,42 +64,40 @@ namespace Snake {
 
 	void Game::OnKeyPressed(sf::Event& event)
 	{
-		if (turning)
+		int bufferSize = (int)dirBuffer.size();
+		if (bufferSize >= 2)
 			return;
 
 		sf::Keyboard::Key key = event.key.code;
-		bool b1 = snakeDir.x != 1 && snakeDir.x != -1;
-		bool b2 = snakeDir.y != 1 && snakeDir.y != -1;
-		turning = true;
+		bool canTurnY = snakeDir.y == 0 || bufferSize > 0;
+		bool canTurnX = snakeDir.x == 0 || bufferSize > 0;
 
-		if (key == sf::Keyboard::W && b2)
-			snakeDir = { 0, -1 };
-		else if (key == sf::Keyboard::S && b2)
-			snakeDir = { 0, 1 };
-		else if (key == sf::Keyboard::D && b1)
-			snakeDir = { 1, 0 };
-		else if (key == sf::Keyboard::A && b1)
-			snakeDir = { -1, 0 };
+		if (key == sf::Keyboard::W && canTurnY)
+			dirBuffer.push({ 0, -1 });
+		else if (key == sf::Keyboard::S && canTurnY)
+			dirBuffer.push({ 0, 1 });
+		else if (key == sf::Keyboard::D && canTurnX)
+			dirBuffer.push({ 1, 0 });
+		else if (key == sf::Keyboard::A && canTurnX)
+			dirBuffer.push({ -1, 0 });
 		else
-			turning = false;
+			return;
 
-		if (!playing && turning)
+		if (!playing)
 			Restart();
 	}
 
 	void Game::UpdateSnake()
 	{
+		UpdateSnakeDir();
+
 		Block& head = *snake.begin();
 		Block tailEnd = *snake.rbegin();
 
 		for (auto block = snake.rbegin(); block != snake.rend() - 1; block++)
 		{
 			if (head.Pos == block->Pos)
-			{
-				playing = false;
-				snakeDir = {};
-				return;
-			}
+				return Reset();
 
 			PositionBlock(*block, (block + 1)->Pos);
 		}
@@ -126,20 +121,20 @@ namespace Snake {
 		PositionBlock(apple, { distX(engn), distY(engn) });
 	}
 
-	void Game::PositionBlock(Block& block, sf::Vector2i gridPos)
+	void Game::Reset()
 	{
-		if (gridPos.x < 0) gridPos.x = gridSize.x - 1;
-		if (gridPos.y < 0) gridPos.y = gridSize.y - 1;
-		const sf::Vector2i coord(gridPos.x % gridSize.x, gridPos.y % gridSize.y);
+		std::queue<sf::Vector2i> temp;
+		dirBuffer.swap(temp);
 
-		block.Pos = coord;
-		block.Rect.setPosition(coord.x / (float)gridSize.x * windowSize.x,
-			coord.y / (float)gridSize.y * windowSize.y);
+		playing = false;
+		snakeDir = {};
 	}
 
 	void Game::Restart()
 	{
 		snake.clear();
+
+		UpdateSnakeDir();
 
 		Block head({ 255, 255, 255 });
 		PositionBlock(head, { 3, 9 });
@@ -153,6 +148,26 @@ namespace Snake {
 		}
 
 		playing = true;
+	}
+
+	void Game::UpdateSnakeDir()
+	{
+		if (!dirBuffer.empty())
+		{
+			snakeDir = dirBuffer.front();
+			dirBuffer.pop();
+		}
+	}
+
+	void Game::PositionBlock(Block& block, sf::Vector2i gridPos)
+	{
+		if (gridPos.x < 0) gridPos.x = gridSize.x - 1;
+		if (gridPos.y < 0) gridPos.y = gridSize.y - 1;
+		const sf::Vector2i coord(gridPos.x % gridSize.x, gridPos.y % gridSize.y);
+
+		block.Pos = coord;
+		block.Rect.setPosition(coord.x / (float)gridSize.x * windowSize.x,
+			coord.y / (float)gridSize.y * windowSize.y);
 	}
 
 	void Game::Draw()

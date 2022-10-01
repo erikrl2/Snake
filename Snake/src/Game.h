@@ -3,6 +3,7 @@
 #include "Application.h"
 
 #include <vector>
+#include <queue>
 
 namespace Snake {
 
@@ -34,8 +35,10 @@ namespace Snake {
 		void OnKeyPressed(sf::Event& event);
 		void UpdateSnake();
 		void SpawnApple();
-		void PositionBlock(Block& block, sf::Vector2i gridPos);
+		void Reset();
 		void Restart();
+		void UpdateSnakeDir();
+		void PositionBlock(Block& block, sf::Vector2i gridPos);
 		void Draw();
 	private:
 		sf::RenderWindow* window = nullptr;
@@ -49,6 +52,8 @@ namespace Snake {
 		std::vector<Block> snake;
 		sf::Vector2i snakeDir = { 1, 0 };
 		float snakeUpdateTime = .08f;
+
+		std::queue<sf::Vector2i> dirBuffer;
 
 		Block apple = { sf::Color(240, 58, 23) };
 
