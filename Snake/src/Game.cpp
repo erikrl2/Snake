@@ -5,6 +5,9 @@
 
 #ifdef NDEBUG
 #include <Windows.h>
+#define MAIN() wWinMain(_In_ HINSTANCE instance, _In_opt_ HINSTANCE previousInstance, _In_ PWSTR arguments, _In_ int commandShow)
+#else
+#define MAIN() main(int argc, char** argv)
 #endif
 
 namespace Snake {
@@ -24,6 +27,7 @@ namespace Snake {
 		fpsCount.setCharacterSize(14);
 
 		Restart();
+		SpawnApple();
 	}
 
 	static bool turning = false;
@@ -33,12 +37,12 @@ namespace Snake {
 		if (playing)
 		{
 			static float t = 0;
-			if (t >= .1f)
+			if (t >= snakeUpdateTime)
 			{
+				UpdateSnake();
+
 				t = 0;
 				turning = false;
-
-				UpdateSnake();
 			}
 			t += ts.asSeconds();
 		}
@@ -63,32 +67,27 @@ namespace Snake {
 
 	void Game::OnKeyPressed(sf::Event& event)
 	{
-		if (playing)
-		{
-			if (turning)
-				return;
-			turning = true;
+		if (turning)
+			return;
 
-			sf::Keyboard::Key key = event.key.code;
+		sf::Keyboard::Key key = event.key.code;
+		bool b1 = snakeDir.x != 1 && snakeDir.x != -1;
+		bool b2 = snakeDir.y != 1 && snakeDir.y != -1;
+		turning = true;
 
-			bool b1 = snakeDir.x != 1 && snakeDir.x != -1;
-			bool b2 = snakeDir.y != 1 && snakeDir.y != -1;
-
-			if (key == sf::Keyboard::W && b2)
-				snakeDir = { 0, -1 };
-			else if (key == sf::Keyboard::S && b2)
-				snakeDir = { 0, 1 };
-			else if (key == sf::Keyboard::D && b1)
-				snakeDir = { 1, 0 };
-			else if (key == sf::Keyboard::A && b1)
-				snakeDir = { -1, 0 };
-			else
-				turning = false;
-		}
+		if (key == sf::Keyboard::W && b2)
+			snakeDir = { 0, -1 };
+		else if (key == sf::Keyboard::S && b2)
+			snakeDir = { 0, 1 };
+		else if (key == sf::Keyboard::D && b1)
+			snakeDir = { 1, 0 };
+		else if (key == sf::Keyboard::A && b1)
+			snakeDir = { -1, 0 };
 		else
-		{
+			turning = false;
+
+		if (!playing && turning)
 			Restart();
-		}
 	}
 
 	void Game::UpdateSnake()
@@ -101,13 +100,14 @@ namespace Snake {
 			if (head.Pos == block->Pos)
 			{
 				playing = false;
+				snakeDir = {};
 				return;
 			}
 
-			MoveBlock(*block, (block + 1)->Pos);
+			PositionBlock(*block, (block + 1)->Pos);
 		}
 
-		MoveBlock(head, head.Pos += snakeDir);
+		PositionBlock(head, head.Pos += snakeDir);
 
 		if (head.Pos == apple.Pos)
 		{
@@ -123,10 +123,10 @@ namespace Snake {
 		static std::uniform_int_distribution<int> distX(0, gridSize.x);
 		static std::uniform_int_distribution<int> distY(0, gridSize.y);
 
-		MoveBlock(apple, { distX(engn), distY(engn) });
+		PositionBlock(apple, { distX(engn), distY(engn) });
 	}
 
-	void Game::MoveBlock(Block& block, sf::Vector2i gridPos)
+	void Game::PositionBlock(Block& block, sf::Vector2i gridPos)
 	{
 		if (gridPos.x < 0) gridPos.x = gridSize.x - 1;
 		if (gridPos.y < 0) gridPos.y = gridSize.y - 1;
@@ -142,17 +142,15 @@ namespace Snake {
 		snake.clear();
 
 		Block head({ 255, 255, 255 });
-		MoveBlock(head, { 3, 9 });
+		PositionBlock(head, { 3, 9 });
 		snake.push_back(head);
 
 		for (int i = 0; i < 3; i++)
 		{
 			Block tail({ 152, 225, 112 });
-			MoveBlock(tail, snake[i].Pos - snakeDir);
+			PositionBlock(tail, snake[i].Pos - snakeDir);
 			snake.push_back(tail);
 		}
-
-		SpawnApple();
 
 		playing = true;
 	}
@@ -173,16 +171,8 @@ namespace Snake {
 
 }
 
-#ifdef NDEBUG
-int wWinMain(_In_ HINSTANCE instance, _In_opt_ HINSTANCE previousInstance, _In_ PWSTR arguments, _In_ int commandShow)
+int MAIN()
 {
 	Application::Launch<Snake::Game>();
 	return 0;
 }
-#else
-int main(int argc, char** argv)
-{
-	Application::Launch<Snake::Game>();
-	return 0;
-}
-#endif
