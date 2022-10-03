@@ -99,10 +99,10 @@ namespace Snake {
 			if (head.Pos == block->Pos)
 				return Reset();
 
-			PositionBlock(*block, (block + 1)->Pos);
+			SetBlockPos(*block, (block + 1)->Pos);
 		}
 
-		PositionBlock(head, head.Pos += snakeDir);
+		SetBlockPos(head, head.Pos + snakeDir);
 
 		if (head.Pos == apple.Pos)
 		{
@@ -118,7 +118,7 @@ namespace Snake {
 		static std::uniform_int_distribution<int> distX(0, gridSize.x);
 		static std::uniform_int_distribution<int> distY(0, gridSize.y);
 
-		PositionBlock(apple, { distX(engn), distY(engn) });
+		SetBlockPos(apple, { distX(engn), distY(engn) });
 	}
 
 	void Game::Reset()
@@ -137,13 +137,13 @@ namespace Snake {
 		UpdateSnakeDir();
 
 		Block head({ 255, 255, 255 });
-		PositionBlock(head, { 3, 9 });
+		SetBlockPos(head, { 3, 9 });
 		snake.push_back(head);
 
 		for (int i = 0; i < 3; i++)
 		{
 			Block tail({ 152, 225, 112 });
-			PositionBlock(tail, snake[i].Pos - snakeDir);
+			SetBlockPos(tail, snake[i].Pos - snakeDir);
 			snake.push_back(tail);
 		}
 
@@ -159,11 +159,11 @@ namespace Snake {
 		}
 	}
 
-	void Game::PositionBlock(Block& block, sf::Vector2i gridPos)
+	void Game::SetBlockPos(Block& block, sf::Vector2i gridPos)
 	{
 		if (gridPos.x < 0) gridPos.x = gridSize.x - 1;
 		if (gridPos.y < 0) gridPos.y = gridSize.y - 1;
-		const sf::Vector2i coord(gridPos.x % gridSize.x, gridPos.y % gridSize.y);
+		sf::Vector2i coord(gridPos.x % gridSize.x, gridPos.y % gridSize.y);
 
 		block.Pos = coord;
 		block.Rect.setPosition(coord.x / (float)gridSize.x * windowSize.x,

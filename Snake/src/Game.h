@@ -17,7 +17,7 @@ namespace Snake {
 		Block(sf::Color color)
 		{
 			Rect.setFillColor(color);
-			Rect.setSize(sf::Vector2f(cellSize, cellSize));
+			Rect.setSize(sf::Vector2f(cellSize - 2, cellSize - 2));
 		}
 
 		operator const sf::Drawable& () { return Rect; }
@@ -38,7 +38,7 @@ namespace Snake {
 		void Reset();
 		void Restart();
 		void UpdateSnakeDir();
-		void PositionBlock(Block& block, sf::Vector2i gridPos);
+		void SetBlockPos(Block& block, sf::Vector2i gridPos);
 		void Draw();
 	private:
 		sf::RenderWindow* window = nullptr;
