@@ -92,7 +92,7 @@ namespace Snake {
 		UpdateSnakeDir();
 
 		Block& head = *snake.begin();
-		Block tailEnd = *snake.rbegin();
+		Block& tailEnd = *snake.rbegin();
 
 		for (auto block = snake.rbegin(); block != snake.rend() - 1; block++)
 		{
